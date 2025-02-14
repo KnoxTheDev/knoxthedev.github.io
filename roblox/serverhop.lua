@@ -34,7 +34,7 @@ screenGui.Name = "ServerHopGui"
 screenGui.Parent = game:GetService("CoreGui")
 
 -----------------------------------------------------------
--- MAIN FRAME (Smooth Dark Mode)
+-- MAIN FRAME (Main GUI)
 -----------------------------------------------------------
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
@@ -43,7 +43,6 @@ mainFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
 mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 mainFrame.BackgroundTransparency = 0.1
 mainFrame.BorderSizePixel = 0
-mainFrame.Visible = true -- Ensure it's initially visible
 mainFrame.Parent = screenGui
 
 local uiCorner = Instance.new("UICorner")
@@ -125,22 +124,32 @@ local rejoinBtn = createButton("RejoinButton", "Rejoin Server", UDim2.new(0.1, 0
 local randomBtn = createButton("RandomButton", "Random Server", UDim2.new(0.1, 0, 0.65, 0), hopRandomServer)
 
 -----------------------------------------------------------
--- CREATE EXTERNAL FLOATING TOGGLE BUTTON
+-- CREATE SEPARATE TOGGLE FRAME
 -----------------------------------------------------------
-local toggleBtn = Instance.new("TextButton")
-toggleBtn.Name = "ToggleButton"
-toggleBtn.Size = UDim2.new(0, 50, 0, 50)
-toggleBtn.Position = UDim2.new(0.9, -60, 0.5, -25) -- Adjusted for visibility
-toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-toggleBtn.Text = "≡"
-toggleBtn.Font = Enum.Font.SourceSansBold
-toggleBtn.TextSize = 24
-toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleBtn.Parent = screenGui
+local toggleFrame = Instance.new("Frame")
+toggleFrame.Name = "ToggleFrame"
+toggleFrame.Size = UDim2.new(0, 60, 0, 60)
+toggleFrame.Position = UDim2.new(0.05, 0, 0.85, 0) -- Bottom-left corner
+toggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+toggleFrame.BackgroundTransparency = 0.2
+toggleFrame.Parent = screenGui
 
 local toggleUICorner = Instance.new("UICorner")
 toggleUICorner.CornerRadius = UDim.new(1, 0) -- Fully rounded
-toggleUICorner.Parent = toggleBtn
+toggleUICorner.Parent = toggleFrame
+
+-----------------------------------------------------------
+-- CREATE BIG TOGGLE BUTTON INSIDE FRAME
+-----------------------------------------------------------
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Name = "ToggleButton"
+toggleBtn.Size = UDim2.new(1, 0, 1, 0)
+toggleBtn.BackgroundTransparency = 0.5
+toggleBtn.Text = "≡"
+toggleBtn.Font = Enum.Font.SourceSansBold
+toggleBtn.TextSize = 30
+toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleBtn.Parent = toggleFrame
 
 -----------------------------------------------------------
 -- TOGGLE GUI OPEN/CLOSE FUNCTION (Smooth Tween)
@@ -158,8 +167,6 @@ local function toggleGUI()
         -- Show Buttons with Animation
         rejoinBtn.Visible = true
         randomBtn.Visible = true
-        rejoinBtn.Position = UDim2.new(0.1, 0, 0.35, 0)
-        randomBtn.Position = UDim2.new(0.1, 0, 0.65, 0)
 
     else
         -- Hide Buttons First
@@ -175,23 +182,23 @@ end
 toggleBtn.MouseButton1Click:Connect(toggleGUI)
 
 -----------------------------------------------------------
--- MAKE TOGGLE BUTTON DRAGGABLE
+-- MAKE TOGGLE FRAME DRAGGABLE
 -----------------------------------------------------------
 local dragging, dragInput, dragStart, startPos
 
 local function update(input)
     local delta = input.Position - dragStart
-    toggleBtn.Position = UDim2.new(
+    toggleFrame.Position = UDim2.new(
         startPos.X.Scale, startPos.X.Offset + delta.X,
         startPos.Y.Scale, startPos.Y.Offset + delta.Y
     )
 end
 
-toggleBtn.InputBegan:Connect(function(input)
+toggleFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
         dragStart = input.Position
-        startPos = toggleBtn.Position
+        startPos = toggleFrame.Position
 
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
@@ -201,7 +208,7 @@ toggleBtn.InputBegan:Connect(function(input)
     end
 end)
 
-toggleBtn.InputChanged:Connect(function(input)
+toggleFrame.InputChanged:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
         dragInput = input
     end
