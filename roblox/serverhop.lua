@@ -14,28 +14,27 @@ local UserInputService = game:GetService("UserInputService")
 
 local localPlayer = Players.LocalPlayer
 local PlaceID = game.PlaceId
+local minimized = false
 
 -----------------------------------------------------------
--- FUNCTION TO RELOAD SCRIPT ON TELEPORT (Unlimited Persistence)
+-- QUEUE SCRIPT ON TELEPORT (Unlimited Persistence)
 -----------------------------------------------------------
 local function reloadScript()
     if type(queue_on_teleport) == "function" then
         queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/KnoxTheDev/knoxthedev.github.io/refs/heads/main/roblox/serverhop.lua"))()]])
     end
 end
-
--- Immediately queue the script on teleport to ensure it persists.
 reloadScript()
 
 -----------------------------------------------------------
--- CREATE SCREEN GUI (Parented to CoreGui for Full Persistence)
+-- CREATE SCREEN GUI
 -----------------------------------------------------------
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "ServerHopGui"
 screenGui.Parent = game:GetService("CoreGui")
 
 -----------------------------------------------------------
--- MAIN FRAME (Dark Mode UI)
+-- MAIN FRAME (Smooth Dark Mode)
 -----------------------------------------------------------
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
@@ -64,7 +63,52 @@ titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.Parent = mainFrame
 
 -----------------------------------------------------------
--- BUTTONS: REJOIN & SERVER HOP
+-- DYNAMIC MINIMIZE/MAXIMIZE BUTTON (Smooth Animation)
+-----------------------------------------------------------
+local minMaxBtn = Instance.new("TextButton")
+minMaxBtn.Name = "MinMaxButton"
+minMaxBtn.Size = UDim2.new(0, 30, 0, 30)
+minMaxBtn.Position = UDim2.new(1, -35, 0, 5)
+minMaxBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+minMaxBtn.BorderSizePixel = 0
+minMaxBtn.Text = "-"
+minMaxBtn.Font = Enum.Font.SourceSansBold
+minMaxBtn.TextSize = 20
+minMaxBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+minMaxBtn.Parent = mainFrame
+
+-----------------------------------------------------------
+-- FUNCTION TO MINIMIZE/MAXIMIZE GUI (Smooth AI-Tweens)
+-----------------------------------------------------------
+local originalSize = mainFrame.Size
+local tweenInfo = TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+
+local function toggleMinimize()
+    minimized = not minimized
+    if minimized then
+        -- Smooth Shrinking
+        local tween = TweenService:Create(mainFrame, tweenInfo, {Size = UDim2.new(0, 300, 0, 40)})
+        tween:Play()
+        tween.Completed:Connect(function()
+            for _, v in ipairs(mainFrame:GetChildren()) do
+                if v:IsA("TextButton") then v.Visible = false end
+            end
+        end)
+        minMaxBtn.Text = "+"
+    else
+        -- Smooth Expanding
+        for _, v in ipairs(mainFrame:GetChildren()) do
+            if v:IsA("TextButton") then v.Visible = true end
+        end
+        local tween = TweenService:Create(mainFrame, tweenInfo, {Size = originalSize})
+        tween:Play()
+        minMaxBtn.Text = "-"
+    end
+end
+minMaxBtn.MouseButton1Click:Connect(toggleMinimize)
+
+-----------------------------------------------------------
+-- FUNCTION TO CREATE BUTTONS WITH TEXT ANIMATION
 -----------------------------------------------------------
 local function createButton(name, text, pos, callback)
     local button = Instance.new("TextButton")
@@ -78,24 +122,51 @@ local function createButton(name, text, pos, callback)
     button.TextSize = 20
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
     button.Parent = mainFrame
-    button.MouseButton1Click:Connect(callback)
+
+    button.MouseButton1Click:Connect(function()
+        local originalText = button.Text
+        button.Text = "⏳ Teleporting..."
+        task.spawn(function()
+            callback()
+            task.wait(1)
+            button.Text = originalText
+        end)
+    end)
+
     return button
 end
 
+-----------------------------------------------------------
+-- REJOIN CURRENT SERVER FUNCTION
+-----------------------------------------------------------
 local function rejoinCurrentServer()
     TeleportService:Teleport(PlaceID, localPlayer)
 end
 
+-----------------------------------------------------------
+-- SMART RANDOM SERVER HOP FUNCTION
+-----------------------------------------------------------
 local function hopRandomServer()
-    local servers = HttpService:JSONDecode(game:HttpGet(("https://games.roblox.com/v1/games/%d/servers/Public?sortOrder=Asc&limit=100"):format(PlaceID)))
-    for _, server in ipairs(servers.data) do
-        if server.playing < server.maxPlayers then
-            TeleportService:TeleportToPlaceInstance(PlaceID, server.id, localPlayer)
-            return
+    local servers, cursor
+    repeat
+        local url = "https://games.roblox.com/v1/games/" .. PlaceID .. "/servers/Public?sortOrder=Asc&limit=100"
+        if cursor then url = url .. "&cursor=" .. cursor end
+        local data = HttpService:JSONDecode(game:HttpGet(url))
+        servers = data.data
+        cursor = data.nextPageCursor
+        for _, server in ipairs(servers) do
+            if server.playing < server.maxPlayers and server.id ~= game.JobId then
+                TeleportService:TeleportToPlaceInstance(PlaceID, server.id, localPlayer)
+                return
+            end
         end
-    end
+        task.wait(0.5) -- Prevent rate limiting
+    until not cursor
 end
 
+-----------------------------------------------------------
+-- CREATE BUTTONS
+-----------------------------------------------------------
 createButton("RejoinButton", "Rejoin Server", UDim2.new(0.1, 0, 0.35, 0), rejoinCurrentServer)
 createButton("RandomButton", "Random Server", UDim2.new(0.1, 0, 0.65, 0), hopRandomServer)
 
