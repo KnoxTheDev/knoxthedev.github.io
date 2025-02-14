@@ -10,23 +10,12 @@ local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
-local ContextActionService = game:GetService("ContextActionService")
 local UserInputService = game:GetService("UserInputService")
 
 local localPlayer = Players.LocalPlayer
 local PlaceID = game.PlaceId
 local currentJobId = game.JobId
 local guiOpen = true
-
------------------------------------------------------------
--- PERSISTENCE: QUEUE SCRIPT ON TELEPORT
------------------------------------------------------------
-local function reloadScript()
-    if type(queue_on_teleport) == "function" then
-        queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/KnoxTheDev/knoxthedev.github.io/refs/heads/main/roblox/serverhop.lua"))()]])
-    end
-end
-reloadScript()
 
 -----------------------------------------------------------
 -- CREATE SCREEN GUI
@@ -135,6 +124,34 @@ local rejoinBtn = createButton("RejoinButton", "Rejoin Server", UDim2.new(0.1, 0
 local randomBtn = createButton("RandomButton", "Random Server", UDim2.new(0.1, 0, 0.65, 0), hopRandomServer)
 
 -----------------------------------------------------------
+-- TRANSPARENT FRAME FOR TOGGLE BUTTON
+-----------------------------------------------------------
+local toggleFrame = Instance.new("Frame")
+toggleFrame.Name = "ToggleFrame"
+toggleFrame.Size = UDim2.new(1, 0, 0, 50) -- Just a container
+toggleFrame.Position = UDim2.new(0, 0, 0, 0)
+toggleFrame.BackgroundTransparency = 1
+toggleFrame.Parent = screenGui
+
+-- Actual Toggle Button
+local toggleButton = Instance.new("TextButton")
+toggleButton.Name = "ToggleButton"
+toggleButton.Size = UDim2.new(0, 120, 0, 40)
+toggleButton.Position = UDim2.new(0.5, -60, 0, 10) -- Centered with padding
+toggleButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+toggleButton.BorderSizePixel = 0
+toggleButton.Text = "☰"
+toggleButton.Font = Enum.Font.SourceSansBold
+toggleButton.TextSize = 22
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Parent = toggleFrame
+
+-- Rounded Corners
+local toggleUICorner = Instance.new("UICorner")
+toggleUICorner.CornerRadius = UDim.new(0, 8)
+toggleUICorner.Parent = toggleButton
+
+-----------------------------------------------------------
 -- TOGGLE GUI FUNCTION (Smooth Animation)
 -----------------------------------------------------------
 local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
@@ -163,22 +180,10 @@ local function toggleGUI()
 end
 
 -----------------------------------------------------------
--- CONTEXT ACTION SERVICE: TOGGLE GUI
+-- TOGGLE BUTTON EVENT
 -----------------------------------------------------------
-local function onToggleGUI(actionName, inputState, inputObject)
-    if inputState == Enum.UserInputState.Begin then
-        toggleGUI()
-    end
-end
-
--- Bind to LeftAlt (PC) & Touch Button (Mobile)
-ContextActionService:BindAction("ToggleServerHopGUI", onToggleGUI, false, Enum.KeyCode.LeftAlt)
-
--- Create Mobile Button
-local touchButton = ContextActionService:BindAction("ToggleServerHopGUI", onToggleGUI, true, Enum.UserInputType.Touch)
-ContextActionService:SetPosition("ToggleServerHopGUI", UDim2.new(0.85, 0, 0.85, 0)) -- Bottom-right corner
-ContextActionService:SetTitle("ToggleServerHopGUI", "⚙️")
+toggleButton.MouseButton1Click:Connect(toggleGUI)
 
 -----------------------------------------------------------
--- DONE! GUI NOW TOGGLES WITH LEFTALT OR MOBILE BUTTON
+-- DONE! GUI NOW TOGGLES WITH THE NEW SLEEK BUTTON
 -----------------------------------------------------------
