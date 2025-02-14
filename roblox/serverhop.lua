@@ -11,6 +11,7 @@ local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
 local ContextActionService = game:GetService("ContextActionService")
+local UserInputService = game:GetService("UserInputService")
 
 local localPlayer = Players.LocalPlayer
 local PlaceID = game.PlaceId
@@ -170,12 +171,14 @@ local function onToggleGUI(actionName, inputState, inputObject)
     end
 end
 
--- Bind a button for PC & Mobile
-ContextActionService:BindAction("ToggleServerHopGUI", onToggleGUI, true, Enum.KeyCode.LeftAlt, Enum.UserInputType.Touch)
+-- Bind to LeftAlt (PC) & Touch Button (Mobile)
+ContextActionService:BindAction("ToggleServerHopGUI", onToggleGUI, false, Enum.KeyCode.LeftAlt)
 
--- Show a mobile button (optional)
-ContextActionService:SetTitle("ToggleServerHopGUI", "⚙️ GUI")
+-- Create Mobile Button
+local touchButton = ContextActionService:BindAction("ToggleServerHopGUI", onToggleGUI, true, Enum.UserInputType.Touch)
+ContextActionService:SetPosition("ToggleServerHopGUI", UDim2.new(0.85, 0, 0.85, 0)) -- Bottom-right corner
+ContextActionService:SetTitle("ToggleServerHopGUI", "⚙️")
 
 -----------------------------------------------------------
--- DONE! GUI NOW TOGGLES WITH ALT OR MOBILE BUTTON
+-- DONE! GUI NOW TOGGLES WITH LEFTALT OR MOBILE BUTTON
 -----------------------------------------------------------
