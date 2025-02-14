@@ -35,19 +35,23 @@ screenGui.Name = "ServerHopGui"
 screenGui.Parent = game:GetService("CoreGui")
 
 -----------------------------------------------------------
--- TOGGLE BUTTON HOLDER (Draggable)
+-- TRANSPARENT FRAME FOR TOGGLE BUTTON
 -----------------------------------------------------------
 local toggleFrame = Instance.new("Frame")
 toggleFrame.Name = "ToggleFrame"
-toggleFrame.Size = UDim2.new(0, 130, 0, 50)
-toggleFrame.Position = UDim2.new(0.5, -65, 0, 5) -- Centered top
+toggleFrame.Size = UDim2.new(1, 0, 0, 50) -- Thin top bar
+toggleFrame.Position = UDim2.new(0, 0, 0, 5) -- Small padding from top
 toggleFrame.BackgroundTransparency = 1
 toggleFrame.Parent = screenGui
 
+-----------------------------------------------------------
+-- TOGGLE BUTTON (Sleek AMOLED Dark Style)
+-----------------------------------------------------------
 local toggleButton = Instance.new("TextButton")
 toggleButton.Name = "ToggleButton"
-toggleButton.Size = UDim2.new(1, 0, 1, 0)
-toggleButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+toggleButton.Size = UDim2.new(0, 120, 0, 40) -- Rectangular button
+toggleButton.Position = UDim2.new(0.5, -60, 0, 5) -- Centered top with padding
+toggleButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20) -- AMOLED dark
 toggleButton.BorderSizePixel = 0
 toggleButton.Text = "⚙️ Toggle GUI"
 toggleButton.Font = Enum.Font.SourceSansBold
@@ -55,12 +59,12 @@ toggleButton.TextSize = 20
 toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 toggleButton.Parent = toggleFrame
 
-local uiCornerToggle = Instance.new("UICorner")
-uiCornerToggle.CornerRadius = UDim.new(0, 10)
-uiCornerToggle.Parent = toggleButton
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 10)
+uiCorner.Parent = toggleButton
 
 -----------------------------------------------------------
--- MAIN GUI FRAME (Draggable)
+-- MAIN GUI FRAME
 -----------------------------------------------------------
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
@@ -76,121 +80,121 @@ mainUICorner.CornerRadius = UDim.new(0, 10)
 mainUICorner.Parent = mainFrame
 
 -----------------------------------------------------------
--- BUTTONS
+-- TITLE LABEL
 -----------------------------------------------------------
-
-local function createButton(name, text, position)
-    local btn = Instance.new("TextButton")
-    btn.Name = name
-    btn.Size = UDim2.new(0.8, 0, 0, 40)
-    btn.Position = position
-    btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    btn.BorderSizePixel = 0
-    btn.Text = text
-    btn.Font = Enum.Font.SourceSansBold
-    btn.TextSize = 20
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.Parent = mainFrame
-
-    local uiCorner = Instance.new("UICorner")
-    uiCorner.CornerRadius = UDim.new(0, 10)
-    uiCorner.Parent = btn
-
-    return btn
-end
-
-local rejoinBtn = createButton("RejoinButton", "Rejoin Server", UDim2.new(0.1, 0, 0.35, 0))
-local randomBtn = createButton("RandomButton", "Random Server", UDim2.new(0.1, 0, 0.65, 0))
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Name = "Title"
+titleLabel.Size = UDim2.new(1, 0, 0, 40)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "Server Hopping"
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.TextSize = 24
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.Parent = mainFrame
 
 -----------------------------------------------------------
--- DRAG FUNCTION (Smooth & Natural)
+-- FUNCTION TO CREATE BUTTONS
 -----------------------------------------------------------
-local function makeDraggable(frame)
-    local dragging, dragStart, startPos, dragInput
+local function createButton(name, text, pos, callback)
+    local button = Instance.new("TextButton")
+    button.Name = name
+    button.Size = UDim2.new(0.8, 0, 0, 40)
+    button.Position = pos
+    button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    button.BorderSizePixel = 0
+    button.Text = text
+    button.Font = Enum.Font.SourceSansBold
+    button.TextSize = 20
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.Parent = mainFrame
+    button.Visible = true -- Ensure visibility for tweening
 
-    local function update(input)
-        local delta = input.Position - dragStart
-        local tween = TweenService:Create(frame, TweenInfo.new(0.1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            Position = UDim2.new(
-                startPos.X.Scale, startPos.X.Offset + delta.X,
-                startPos.Y.Scale, startPos.Y.Offset + delta.Y
-            )
-        })
-        tween:Play()
-    end
-
-    frame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = input.Position
-            startPos = frame.Position
-
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
-        end
+    button.MouseButton1Click:Connect(function()
+        local originalText = button.Text
+        button.Text = "⏳ Teleporting..."
+        task.spawn(function()
+            callback()
+            task.wait(1)
+            button.Text = originalText
+        end)
     end)
 
-    frame.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then
-            dragInput = input
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and input == dragInput then
-            update(input)
-        end
-    end)
+    return button
 end
 
-makeDraggable(mainFrame)
-makeDraggable(toggleFrame)
-
 -----------------------------------------------------------
--- TOGGLE GUI
------------------------------------------------------------
-local function toggleGUI()
-    guiOpen = not guiOpen
-    local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-    local goal = {Position = guiOpen and UDim2.new(0.5, -150, 0.5, -75) or UDim2.new(0.5, -150, -1, -150)}
-    local tween = TweenService:Create(mainFrame, tweenInfo, goal)
-    tween:Play()
-end
-
-toggleButton.MouseButton1Click:Connect(toggleGUI)
-
------------------------------------------------------------
--- SERVER HOPPING LOGIC
+-- SERVER HOP FUNCTIONS
 -----------------------------------------------------------
 local function rejoinCurrentServer()
-    rejoinBtn.Text = "Rejoining..."
     TeleportService:Teleport(PlaceID, localPlayer)
 end
 
 local function hopRandomServer()
-    randomBtn.Text = "Searching..."
-    local URL = 'https://games.roblox.com/v1/games/' .. PlaceID .. '/servers/Public?sortOrder=Asc&limit=100'
-    local Servers = HttpService:JSONDecode(game:HttpGet(URL))
+    local servers, cursor
+    repeat
+        local url = "https://games.roblox.com/v1/games/" .. PlaceID .. "/servers/Public?sortOrder=Asc&limit=100"
+        if cursor then url = url .. "&cursor=" .. cursor end
+        local data = HttpService:JSONDecode(game:HttpGet(url))
+        servers = data.data
+        cursor = data.nextPageCursor
+        local availableServers = {}
 
-    for _, v in ipairs(Servers.data) do
-        if v.id ~= currentJobId then
-            TeleportService:TeleportToPlaceInstance(PlaceID, v.id, localPlayer)
+        -- Filter out current server and gather all valid servers
+        for _, server in ipairs(servers) do
+            if server.playing < server.maxPlayers and server.id ~= currentJobId then
+                table.insert(availableServers, server.id)
+            end
+        end
+
+        -- Randomly pick a valid server
+        if #availableServers > 0 then
+            local randomServer = availableServers[math.random(1, #availableServers)]
+            TeleportService:TeleportToPlaceInstance(PlaceID, randomServer, localPlayer)
             return
         end
-    end
-
-    randomBtn.Text = "No Servers Found"
-    wait(2)
-    randomBtn.Text = "Random Server"
+        task.wait(0.5) -- Prevent rate limiting
+    until not cursor
 end
 
 -----------------------------------------------------------
--- BUTTON EVENTS
+-- CREATE HOP BUTTONS
 -----------------------------------------------------------
-rejoinBtn.MouseButton1Click:Connect(rejoinCurrentServer)
-randomBtn.MouseButton1Click:Connect(function()
-    task.spawn(hopRandomServer)
-end)
+local rejoinBtn = createButton("RejoinButton", "Rejoin Server", UDim2.new(0.1, 0, 0.35, 0), rejoinCurrentServer)
+local randomBtn = createButton("RandomButton", "Random Server", UDim2.new(0.1, 0, 0.65, 0), hopRandomServer)
+
+-----------------------------------------------------------
+-- TOGGLE GUI FUNCTION (Smooth Animation)
+-----------------------------------------------------------
+local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+
+local function toggleGUI()
+    guiOpen = not guiOpen
+
+    if guiOpen then
+        -- Expand GUI and Show Buttons
+        local tween = TweenService:Create(mainFrame, tweenInfo, {Size = UDim2.new(0, 300, 0, 150), BackgroundTransparency = 0.1})
+        tween:Play()
+
+        -- Show Buttons with Animation
+        rejoinBtn.Visible = true
+        randomBtn.Visible = true
+
+    else
+        -- Hide Buttons First
+        rejoinBtn.Visible = false
+        randomBtn.Visible = false
+
+        -- Shrink GUI
+        local tween = TweenService:Create(mainFrame, tweenInfo, {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1})
+        tween:Play()
+    end
+end
+
+-----------------------------------------------------------
+-- BUTTON CLICK EVENT
+-----------------------------------------------------------
+toggleButton.MouseButton1Click:Connect(toggleGUI)
+
+-----------------------------------------------------------
+-- DONE! GUI NOW TOGGLES WITH A SEPARATE BUTTON
+-----------------------------------------------------------
