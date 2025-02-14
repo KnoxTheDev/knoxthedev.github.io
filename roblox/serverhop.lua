@@ -14,7 +14,7 @@ local UserInputService = game:GetService("UserInputService")
 
 local localPlayer = Players.LocalPlayer
 local PlaceID = game.PlaceId
-local minimized = false
+local guiOpen = true
 
 -----------------------------------------------------------
 -- QUEUE SCRIPT ON TELEPORT (Unlimited Persistence)
@@ -43,6 +43,7 @@ mainFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
 mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 mainFrame.BackgroundTransparency = 0.1
 mainFrame.BorderSizePixel = 0
+mainFrame.Visible = true -- Ensure it's initially visible
 mainFrame.Parent = screenGui
 
 local uiCorner = Instance.new("UICorner")
@@ -63,52 +64,7 @@ titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.Parent = mainFrame
 
 -----------------------------------------------------------
--- DYNAMIC MINIMIZE/MAXIMIZE BUTTON (Smooth Animation)
------------------------------------------------------------
-local minMaxBtn = Instance.new("TextButton")
-minMaxBtn.Name = "MinMaxButton"
-minMaxBtn.Size = UDim2.new(0, 30, 0, 30)
-minMaxBtn.Position = UDim2.new(1, -35, 0, 5)
-minMaxBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-minMaxBtn.BorderSizePixel = 0
-minMaxBtn.Text = "-"
-minMaxBtn.Font = Enum.Font.SourceSansBold
-minMaxBtn.TextSize = 20
-minMaxBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-minMaxBtn.Parent = mainFrame
-
------------------------------------------------------------
--- FUNCTION TO MINIMIZE/MAXIMIZE GUI (Smooth AI-Tweens)
------------------------------------------------------------
-local originalSize = mainFrame.Size
-local tweenInfo = TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-
-local function toggleMinimize()
-    minimized = not minimized
-    if minimized then
-        -- Smooth Shrinking
-        local tween = TweenService:Create(mainFrame, tweenInfo, {Size = UDim2.new(0, 300, 0, 40)})
-        tween:Play()
-        tween.Completed:Connect(function()
-            for _, v in ipairs(mainFrame:GetChildren()) do
-                if v:IsA("TextButton") then v.Visible = false end
-            end
-        end)
-        minMaxBtn.Text = "+"
-    else
-        -- Smooth Expanding
-        for _, v in ipairs(mainFrame:GetChildren()) do
-            if v:IsA("TextButton") then v.Visible = true end
-        end
-        local tween = TweenService:Create(mainFrame, tweenInfo, {Size = originalSize})
-        tween:Play()
-        minMaxBtn.Text = "-"
-    end
-end
-minMaxBtn.MouseButton1Click:Connect(toggleMinimize)
-
------------------------------------------------------------
--- FUNCTION TO CREATE BUTTONS WITH TEXT ANIMATION
+-- FUNCTION TO CREATE BUTTONS
 -----------------------------------------------------------
 local function createButton(name, text, pos, callback)
     local button = Instance.new("TextButton")
@@ -122,6 +78,7 @@ local function createButton(name, text, pos, callback)
     button.TextSize = 20
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
     button.Parent = mainFrame
+    button.Visible = true -- Ensure visibility for tweening
 
     button.MouseButton1Click:Connect(function()
         local originalText = button.Text
@@ -137,15 +94,12 @@ local function createButton(name, text, pos, callback)
 end
 
 -----------------------------------------------------------
--- REJOIN CURRENT SERVER FUNCTION
+-- SERVER HOP FUNCTIONS
 -----------------------------------------------------------
 local function rejoinCurrentServer()
     TeleportService:Teleport(PlaceID, localPlayer)
 end
 
------------------------------------------------------------
--- SMART RANDOM SERVER HOP FUNCTION
------------------------------------------------------------
 local function hopRandomServer()
     local servers, cursor
     repeat
@@ -165,29 +119,79 @@ local function hopRandomServer()
 end
 
 -----------------------------------------------------------
--- CREATE BUTTONS
+-- CREATE HOP BUTTONS
 -----------------------------------------------------------
-createButton("RejoinButton", "Rejoin Server", UDim2.new(0.1, 0, 0.35, 0), rejoinCurrentServer)
-createButton("RandomButton", "Random Server", UDim2.new(0.1, 0, 0.65, 0), hopRandomServer)
+local rejoinBtn = createButton("RejoinButton", "Rejoin Server", UDim2.new(0.1, 0, 0.35, 0), rejoinCurrentServer)
+local randomBtn = createButton("RandomButton", "Random Server", UDim2.new(0.1, 0, 0.65, 0), hopRandomServer)
 
 -----------------------------------------------------------
--- MAKE GUI DRAGGABLE
+-- CREATE EXTERNAL FLOATING TOGGLE BUTTON
+-----------------------------------------------------------
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Name = "ToggleButton"
+toggleBtn.Size = UDim2.new(0, 50, 0, 50)
+toggleBtn.Position = UDim2.new(0.9, -60, 0.5, -25) -- Adjusted for visibility
+toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+toggleBtn.Text = "≡"
+toggleBtn.Font = Enum.Font.SourceSansBold
+toggleBtn.TextSize = 24
+toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleBtn.Parent = screenGui
+
+local toggleUICorner = Instance.new("UICorner")
+toggleUICorner.CornerRadius = UDim.new(1, 0) -- Fully rounded
+toggleUICorner.Parent = toggleBtn
+
+-----------------------------------------------------------
+-- TOGGLE GUI OPEN/CLOSE FUNCTION (Smooth Tween)
+-----------------------------------------------------------
+local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+
+local function toggleGUI()
+    guiOpen = not guiOpen
+
+    if guiOpen then
+        -- Expand GUI and Show Buttons
+        local tween = TweenService:Create(mainFrame, tweenInfo, {Size = UDim2.new(0, 300, 0, 150), BackgroundTransparency = 0.1})
+        tween:Play()
+
+        -- Show Buttons with Animation
+        rejoinBtn.Visible = true
+        randomBtn.Visible = true
+        rejoinBtn.Position = UDim2.new(0.1, 0, 0.35, 0)
+        randomBtn.Position = UDim2.new(0.1, 0, 0.65, 0)
+
+    else
+        -- Hide Buttons First
+        rejoinBtn.Visible = false
+        randomBtn.Visible = false
+
+        -- Shrink GUI
+        local tween = TweenService:Create(mainFrame, tweenInfo, {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1})
+        tween:Play()
+    end
+end
+
+toggleBtn.MouseButton1Click:Connect(toggleGUI)
+
+-----------------------------------------------------------
+-- MAKE TOGGLE BUTTON DRAGGABLE
 -----------------------------------------------------------
 local dragging, dragInput, dragStart, startPos
 
 local function update(input)
     local delta = input.Position - dragStart
-    mainFrame.Position = UDim2.new(
+    toggleBtn.Position = UDim2.new(
         startPos.X.Scale, startPos.X.Offset + delta.X,
         startPos.Y.Scale, startPos.Y.Offset + delta.Y
     )
 end
 
-mainFrame.InputBegan:Connect(function(input)
+toggleBtn.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
         dragStart = input.Position
-        startPos = mainFrame.Position
+        startPos = toggleBtn.Position
 
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
@@ -197,7 +201,7 @@ mainFrame.InputBegan:Connect(function(input)
     end
 end)
 
-mainFrame.InputChanged:Connect(function(input)
+toggleBtn.InputChanged:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
         dragInput = input
     end
