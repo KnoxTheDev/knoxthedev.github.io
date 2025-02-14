@@ -10,14 +10,15 @@ local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
+local ContextActionService = game:GetService("ContextActionService")
 
 local localPlayer = Players.LocalPlayer
 local PlaceID = game.PlaceId
+local currentJobId = game.JobId
 local guiOpen = true
 
 -----------------------------------------------------------
--- QUEUE SCRIPT ON TELEPORT (Unlimited Persistence)
+-- PERSISTENCE: QUEUE SCRIPT ON TELEPORT
 -----------------------------------------------------------
 local function reloadScript()
     if type(queue_on_teleport) == "function" then
@@ -107,11 +108,20 @@ local function hopRandomServer()
         local data = HttpService:JSONDecode(game:HttpGet(url))
         servers = data.data
         cursor = data.nextPageCursor
+        local availableServers = {}
+
+        -- Filter out current server and gather all valid servers
         for _, server in ipairs(servers) do
-            if server.playing < server.maxPlayers and server.id ~= game.JobId then
-                TeleportService:TeleportToPlaceInstance(PlaceID, server.id, localPlayer)
-                return
+            if server.playing < server.maxPlayers and server.id ~= currentJobId then
+                table.insert(availableServers, server.id)
             end
+        end
+
+        -- Randomly pick a valid server
+        if #availableServers > 0 then
+            local randomServer = availableServers[math.random(1, #availableServers)]
+            TeleportService:TeleportToPlaceInstance(PlaceID, randomServer, localPlayer)
+            return
         end
         task.wait(0.5) -- Prevent rate limiting
     until not cursor
@@ -124,35 +134,7 @@ local rejoinBtn = createButton("RejoinButton", "Rejoin Server", UDim2.new(0.1, 0
 local randomBtn = createButton("RandomButton", "Random Server", UDim2.new(0.1, 0, 0.65, 0), hopRandomServer)
 
 -----------------------------------------------------------
--- CREATE SEPARATE TOGGLE FRAME
------------------------------------------------------------
-local toggleFrame = Instance.new("Frame")
-toggleFrame.Name = "ToggleFrame"
-toggleFrame.Size = UDim2.new(0, 60, 0, 60)
-toggleFrame.Position = UDim2.new(0.05, 0, 0.85, 0) -- Bottom-left corner
-toggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-toggleFrame.BackgroundTransparency = 0.2
-toggleFrame.Parent = screenGui
-
-local toggleUICorner = Instance.new("UICorner")
-toggleUICorner.CornerRadius = UDim.new(1, 0) -- Fully rounded
-toggleUICorner.Parent = toggleFrame
-
------------------------------------------------------------
--- CREATE BIG TOGGLE BUTTON INSIDE FRAME
------------------------------------------------------------
-local toggleBtn = Instance.new("TextButton")
-toggleBtn.Name = "ToggleButton"
-toggleBtn.Size = UDim2.new(1, 0, 1, 0)
-toggleBtn.BackgroundTransparency = 0.5
-toggleBtn.Text = "≡"
-toggleBtn.Font = Enum.Font.SourceSansBold
-toggleBtn.TextSize = 30
-toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleBtn.Parent = toggleFrame
-
------------------------------------------------------------
--- TOGGLE GUI OPEN/CLOSE FUNCTION (Smooth Tween)
+-- TOGGLE GUI FUNCTION (Smooth Animation)
 -----------------------------------------------------------
 local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 
@@ -179,43 +161,21 @@ local function toggleGUI()
     end
 end
 
-toggleBtn.MouseButton1Click:Connect(toggleGUI)
-
 -----------------------------------------------------------
--- MAKE TOGGLE FRAME DRAGGABLE
+-- CONTEXT ACTION SERVICE: TOGGLE GUI
 -----------------------------------------------------------
-local dragging, dragInput, dragStart, startPos
-
-local function update(input)
-    local delta = input.Position - dragStart
-    toggleFrame.Position = UDim2.new(
-        startPos.X.Scale, startPos.X.Offset + delta.X,
-        startPos.Y.Scale, startPos.Y.Offset + delta.Y
-    )
+local function onToggleGUI(actionName, inputState, inputObject)
+    if inputState == Enum.UserInputState.Begin then
+        toggleGUI()
+    end
 end
 
-toggleFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = toggleFrame.Position
+-- Bind a button for PC & Mobile
+ContextActionService:BindAction("ToggleServerHopGUI", onToggleGUI, true, Enum.KeyCode.LeftAlt, Enum.UserInputType.Touch)
 
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
+-- Show a mobile button (optional)
+ContextActionService:SetTitle("ToggleServerHopGUI", "⚙️ GUI")
 
-toggleFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if dragging and input == dragInput then
-        update(input)
-    end
-end)
+-----------------------------------------------------------
+-- DONE! GUI NOW TOGGLES WITH ALT OR MOBILE BUTTON
+-----------------------------------------------------------
