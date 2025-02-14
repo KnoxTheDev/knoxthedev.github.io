@@ -18,6 +18,16 @@ local currentJobId = game.JobId
 local guiOpen = true
 
 -----------------------------------------------------------
+-- PERSISTENCE: QUEUE SCRIPT ON TELEPORT
+-----------------------------------------------------------
+local function reloadScript()
+    if type(queue_on_teleport) == "function" then
+        queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/KnoxTheDev/knoxthedev.github.io/refs/heads/main/roblox/serverhop.lua"))()]])
+    end
+end
+reloadScript()
+
+-----------------------------------------------------------
 -- CREATE SCREEN GUI
 -----------------------------------------------------------
 local screenGui = Instance.new("ScreenGui")
@@ -25,7 +35,36 @@ screenGui.Name = "ServerHopGui"
 screenGui.Parent = game:GetService("CoreGui")
 
 -----------------------------------------------------------
--- MAIN FRAME (Main GUI)
+-- TRANSPARENT FRAME FOR TOGGLE BUTTON
+-----------------------------------------------------------
+local toggleFrame = Instance.new("Frame")
+toggleFrame.Name = "ToggleFrame"
+toggleFrame.Size = UDim2.new(1, 0, 0, 50) -- Thin top bar
+toggleFrame.Position = UDim2.new(0, 0, 0, 5) -- Small padding from top
+toggleFrame.BackgroundTransparency = 1
+toggleFrame.Parent = screenGui
+
+-----------------------------------------------------------
+-- TOGGLE BUTTON (Sleek AMOLED Dark Style)
+-----------------------------------------------------------
+local toggleButton = Instance.new("TextButton")
+toggleButton.Name = "ToggleButton"
+toggleButton.Size = UDim2.new(0, 120, 0, 40) -- Rectangular button
+toggleButton.Position = UDim2.new(0.5, -60, 0, 5) -- Centered top with padding
+toggleButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20) -- AMOLED dark
+toggleButton.BorderSizePixel = 0
+toggleButton.Text = "⚙️ Toggle GUI"
+toggleButton.Font = Enum.Font.SourceSansBold
+toggleButton.TextSize = 20
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Parent = toggleFrame
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 10)
+uiCorner.Parent = toggleButton
+
+-----------------------------------------------------------
+-- MAIN GUI FRAME
 -----------------------------------------------------------
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
@@ -36,9 +75,9 @@ mainFrame.BackgroundTransparency = 0.1
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
 
-local uiCorner = Instance.new("UICorner")
-uiCorner.CornerRadius = UDim.new(0, 10)
-uiCorner.Parent = mainFrame
+local mainUICorner = Instance.new("UICorner")
+mainUICorner.CornerRadius = UDim.new(0, 10)
+mainUICorner.Parent = mainFrame
 
 -----------------------------------------------------------
 -- TITLE LABEL
@@ -124,34 +163,6 @@ local rejoinBtn = createButton("RejoinButton", "Rejoin Server", UDim2.new(0.1, 0
 local randomBtn = createButton("RandomButton", "Random Server", UDim2.new(0.1, 0, 0.65, 0), hopRandomServer)
 
 -----------------------------------------------------------
--- TRANSPARENT FRAME FOR TOGGLE BUTTON
------------------------------------------------------------
-local toggleFrame = Instance.new("Frame")
-toggleFrame.Name = "ToggleFrame"
-toggleFrame.Size = UDim2.new(1, 0, 0, 50) -- Just a container
-toggleFrame.Position = UDim2.new(0, 0, 0, 0)
-toggleFrame.BackgroundTransparency = 1
-toggleFrame.Parent = screenGui
-
--- Actual Toggle Button
-local toggleButton = Instance.new("TextButton")
-toggleButton.Name = "ToggleButton"
-toggleButton.Size = UDim2.new(0, 120, 0, 40)
-toggleButton.Position = UDim2.new(0.5, -60, 0, 10) -- Centered with padding
-toggleButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-toggleButton.BorderSizePixel = 0
-toggleButton.Text = "☰"
-toggleButton.Font = Enum.Font.SourceSansBold
-toggleButton.TextSize = 22
-toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleButton.Parent = toggleFrame
-
--- Rounded Corners
-local toggleUICorner = Instance.new("UICorner")
-toggleUICorner.CornerRadius = UDim.new(0, 8)
-toggleUICorner.Parent = toggleButton
-
------------------------------------------------------------
 -- TOGGLE GUI FUNCTION (Smooth Animation)
 -----------------------------------------------------------
 local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
@@ -180,10 +191,10 @@ local function toggleGUI()
 end
 
 -----------------------------------------------------------
--- TOGGLE BUTTON EVENT
+-- BUTTON CLICK EVENT
 -----------------------------------------------------------
 toggleButton.MouseButton1Click:Connect(toggleGUI)
 
 -----------------------------------------------------------
--- DONE! GUI NOW TOGGLES WITH THE NEW SLEEK BUTTON
+-- DONE! GUI NOW TOGGLES WITH A SEPARATE BUTTON
 -----------------------------------------------------------
