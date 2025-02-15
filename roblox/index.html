@@ -61,9 +61,16 @@
 <body>
 
     <h1>KnoxTheDev's RBX Projects</h1>
-    
+
     <div class="project-list">
-        <a href="https://knoxthedev.github.io/roblox/serverhop.lua" class="btn btn-custom">⚡ Server Hop</a>
+        <form>
+            <input id="scriptInput" value="loadstring(game:HttpGet('https://knoxthedev.github.io/roblox/serverhopgui.lua'))()" readonly>
+            <button type="submit" class="btn btn-custom">📋 Server Hop GUI</button>
+        </form>
+        <form>
+            <input id="scriptInput" value="loadstring(game:HttpGet('https://knoxthedev.github.io/roblox/serverhop.lua'))()" readonly>
+            <button type="submit" class="btn btn-custom">📋 Server Hop Functions</button>
+        </form>
     </div>
 
     <div class="footer">
