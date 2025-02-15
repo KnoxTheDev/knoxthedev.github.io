@@ -52,13 +52,13 @@ toggleFrame.Parent = screenGui
 -----------------------------------------------------------
 local toggleButton = Instance.new("TextButton")
 toggleButton.Name = "ToggleButton"
-toggleButton.Size = UDim2.new(0, 120, 0, 40) -- Rectangular button
+toggleButton.Size = UDim2.new(0, 160, 0, 40) -- Rectangular button
 toggleButton.Position = UDim2.new(0.5, -60, 0, 5) -- Centered top with padding
 toggleButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20) -- AMOLED dark
 toggleButton.BorderSizePixel = 0
 toggleButton.Text = "⚙️ Toggle GUI"
 toggleButton.FontFace = montserratBold
-toggleButton.TextSize = 18
+toggleButton.TextSize = 21
 toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 toggleButton.Parent = toggleFrame
 
@@ -91,7 +91,7 @@ titleLabel.Size = UDim2.new(1, 0, 0, 40)
 titleLabel.BackgroundTransparency = 1
 titleLabel.Text = "Server Hopper"
 titleLabel.FontFace = montserratBold
-titleLabel.TextSize = 18
+titleLabel.TextSize = 21
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.Parent = mainFrame
 
@@ -107,7 +107,7 @@ local function createButton(name, text, pos, callback)
     button.BorderSizePixel = 0
     button.Text = text
     button.FontFace = montserratBold
-    button.TextSize = 18
+    button.TextSize = 21
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
     button.Parent = mainFrame
     button.Visible = true -- Ensure visibility for tweening
