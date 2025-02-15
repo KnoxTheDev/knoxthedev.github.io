@@ -17,6 +17,9 @@ local PlaceID = game.PlaceId
 local currentJobId = game.JobId
 local guiOpen = true
 
+-- Create a new Font object with Montserrat family and Bold weight
+local montserratBold = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Bold)
+
 -----------------------------------------------------------
 -- PERSISTENCE: QUEUE SCRIPT ON TELEPORT
 -----------------------------------------------------------
@@ -54,7 +57,7 @@ toggleButton.Position = UDim2.new(0.5, -60, 0, 5) -- Centered top with padding
 toggleButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20) -- AMOLED dark
 toggleButton.BorderSizePixel = 0
 toggleButton.Text = "⚙️ Toggle GUI"
-toggleButton.Font = Enum.Font.SourceSansBold
+toggleButton.FontFace = montserratBold
 toggleButton.TextSize = 20
 toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 toggleButton.Parent = toggleFrame
@@ -87,7 +90,7 @@ titleLabel.Name = "Title"
 titleLabel.Size = UDim2.new(1, 0, 0, 40)
 titleLabel.BackgroundTransparency = 1
 titleLabel.Text = "Server Hopper"
-titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.FontFace = montserratBold
 titleLabel.TextSize = 24
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.Parent = mainFrame
@@ -103,7 +106,7 @@ local function createButton(name, text, pos, callback)
     button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     button.BorderSizePixel = 0
     button.Text = text
-    button.Font = Enum.Font.SourceSansBold
+    button.FontFace = montserratBold
     button.TextSize = 20
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
     button.Parent = mainFrame
