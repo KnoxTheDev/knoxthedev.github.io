@@ -22,7 +22,7 @@ local guiOpen = true
 -----------------------------------------------------------
 local function reloadScript()
     if type(queue_on_teleport) == "function" then
-        queue_on_teleport([[loadstring(game:HttpGet("https://knoxthedev.github.io/roblox/serverhop.lua"))()]])
+        queue_on_teleport([[loadstring(game:HttpGet("https://knoxthedev.github.io/roblox/serverhopgui.lua"))()]])
     end
 end
 reloadScript()
