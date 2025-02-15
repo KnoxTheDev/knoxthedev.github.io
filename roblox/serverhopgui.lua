@@ -52,8 +52,9 @@ toggleFrame.Parent = screenGui
 -----------------------------------------------------------
 local toggleButton = Instance.new("TextButton")
 toggleButton.Name = "ToggleButton"
-toggleButton.Size = UDim2.new(0, 160, 0, 40) -- Rectangular button
-toggleButton.Position = UDim2.new(0.5, -30, 0, 5) -- Centered top with padding
+toggleButton.Size = UDim2.new(0, 160, 0, 40) -- Set button size
+toggleButton.AnchorPoint = Vector2.new(0.5, 0) -- Set anchor to top-center
+toggleButton.Position = UDim2.new(0.5, 0, 0, 10) -- Centered horizontally, 10 pixels from the top
 toggleButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20) -- AMOLED dark
 toggleButton.BorderSizePixel = 0
 toggleButton.Text = "⚙️ Toggle GUI"
