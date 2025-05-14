@@ -1,0 +1,125 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+  <meta charset="UTF-8" />  
+  <meta name="viewport" content="width=770, initial-scale=1.0" />  
+  <title>Knoxius Chit</title>  
+  <style>  
+    body {  
+      margin: 0;  
+      background: #fff;  
+      font-family: "Segoe UI", sans-serif;  
+      display: flex;  
+      flex-direction: column;  
+      align-items: center;  
+      color: black;  
+    }  
+  
+    #chit {  
+      width: 770px;  
+      height: 1080px;  
+      padding: 40px 30px;  
+      box-sizing: border-box;  
+      background: white;  
+      border: 2px solid black;  
+      border-radius: 8px;  
+      display: flex;  
+      flex-direction: column;  
+      align-items: center;  
+      justify-content: center;  
+      text-align: center;  
+    }  
+  
+    .logo {  
+      font-size: 180px;  
+      color: #00ffff;  
+      -webkit-text-stroke: 3px black;  
+      text-stroke: 3px black;  
+      font-weight: bold;  
+      font-family: Impact, sans-serif;  
+      margin: 0;  
+      line-height: 160px;  
+    }  
+  
+    .brand {  
+      font-size: 48px;  
+      font-weight: bold;  
+      margin-top: -20px;  
+    }  
+  
+    .tagline {  
+      font-size: 26px;  
+      font-weight: 600;  
+      margin: 20px 0;  
+      max-width: 700px;  
+    }  
+  
+    .details,  
+    .pricing,  
+    .note {  
+      font-size: 22px;  
+      font-weight: 500;  
+      margin: 20px 0;  
+      max-width: 700px;  
+      line-height: 1.6;  
+    }  
+  
+    button {  
+      margin: 30px;  
+      padding: 12px 28px;  
+      font-size: 16px;  
+      font-weight: bold;  
+      background-color: black;  
+      color: white;  
+      border: none;  
+      border-radius: 6px;  
+      cursor: pointer;  
+    }  
+  
+    button:hover {  
+      background-color: #333;  
+    }  
+  </style>  
+</head>  
+<body>  
+  <div id="chit">  
+    <div class="logo">K</div>  
+    <div class="brand">Knoxius</div>  
+    <div class="tagline">"NOTES — FOR EXAMS & CLASS TESTS"</div>  
+  
+    <div class="details">  
+      Strictly written support material only.<br />  
+      Each chapter can produce up to 3 chits.  
+    </div>  
+  
+    <div class="pricing">  
+      Prepaid: ₹5 per chit<br />  
+      Postpaid: ₹10 per chit  
+    </div>  
+  
+    <div class="note">  
+      (For postpaid, securities worth ₹10<br />  
+      must be given to the dealer and will be returned after payment.)  
+    </div>  
+  </div>  
+  
+  <button onclick="downloadChit()">Save as PNG</button>  
+  
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>  
+  <script>  
+    function downloadChit() {  
+      const chit = document.getElementById("chit");  
+      html2canvas(chit, {  
+        width: 770,  
+        height: 1080,  
+        scale: 1  
+      }).then(canvas => {  
+        const link = document.createElement("a");  
+        link.download = "knoxius_chit.png";  
+        link.href = canvas.toDataURL("image/png");  
+        link.click();  
+      });  
+    }  
+  </script>  
+</body>  
+</html>
